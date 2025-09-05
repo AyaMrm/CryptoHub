@@ -1,0 +1,7 @@
+.env
+venv/
+__pycache__
+routes/__pycache__/
+crypto/hash/__pycache__/
+crypto/modern/__pycache__/
+crypto/classical/__pycache__/

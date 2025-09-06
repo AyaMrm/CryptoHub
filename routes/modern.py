@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, Blueprint
 from crypto.modern.aes import aes_encrypt_ECB, aes_decrypt_ECB, aes_encrypt_CBC, decrypt_AES_CBC
 from crypto.modern.rc4 import rc4
-from crypto.modern.des import des_decrypt_text, des_encrypt_text
+from crypto.modern.des import des_encrypt, des_decrypt
 import base64
 
 modern_bp = Blueprint("Modern", __name__)
@@ -65,19 +65,31 @@ def rc4_decrypt_route():
     plaintext = plain.decode(errors="ignore")
     return jsonify({"plaintext": plaintext})
 
-
 @modern_bp.route('/des/encrypt', methods=['POST'])
 def des_encrypt_route():
     data = request.get_json()
     text = data.get("text", "")
     key = data.get("key", "").encode()
-    cipher = des_encrypt_text(text, key)
-    return jsonify({"ciphertext": cipher})
+    mode = data.get("mode", "ECB").upper()
+    iv = data.get("iv", None)
+    if iv:
+        iv = bytes.fromhex(iv)  
+    iv_bytes, ct = des_encrypt(text, key, mode, iv)
+    return jsonify({
+        "ciphertext": ct.hex(),
+        "iv": iv_bytes.hex() if iv_bytes else None
+    })
 
 @modern_bp.route('/des/decrypt', methods=['POST'])
 def des_decrypt_route():
     data = request.get_json()
-    text = data.get("text", "")
+    ciphertext = bytes.fromhex(data.get("text", ""))
     key = data.get("key", "").encode()
-    cipher = des_encrypt_text(text, key)
-    return jsonify({"ptext": cipher})
+    mode = data.get("mode", "ECB").upper()
+    iv = data.get("iv", None)
+    if iv:
+        iv = bytes.fromhex(iv)
+    pt = des_decrypt(iv, ciphertext, key, mode)
+    return jsonify({
+        "plaintext": pt.decode("utf-8")
+    })

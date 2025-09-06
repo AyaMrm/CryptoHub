@@ -1,4 +1,7 @@
 from Crypto.Hash import MD2
+import hashlib
+import itertools
+import string
 
 def md2_hash(data:str)->str:
     h = MD2.new()

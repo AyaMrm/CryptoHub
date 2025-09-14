@@ -2,9 +2,9 @@ from flask import Flask, request, jsonify, Blueprint
 from crypto.modern.aes import aes_encrypt_ECB, aes_decrypt_ECB, aes_encrypt_CBC, decrypt_AES_CBC
 from crypto.modern.rc4 import rc4
 from crypto.modern.des import des_encrypt, des_decrypt
-
+from crypto.modern.rsa import generate_keys, rsa_encrypt, rsa_decrypt
 import base64
-from crypto.modern.rsa import generate_keys, encrypt, decrypt
+
 
 modern_bp = Blueprint("Modern", __name__)
 
@@ -111,7 +111,7 @@ def rsa_encrypt_route():
             return jsonify({"error": "Text Field is required ! "})
         
         pub, priv = generate_keys(n=n, p=p, q=q, e=e, bits=bits)
-        ciphertext = encrypt(text, pub)
+        ciphertext = rsa_encrypt(text, pub)
         return jsonify({
             "public_key": {"n": pub[0], "e": pub[1]},
             "private_key": {"n": priv[0], "d": priv[1]},
@@ -139,7 +139,7 @@ def rsa_decrypt_route():
         else:
             priv_tuple = None
 
-        plaintext = decrypt(
+        plaintext = rsa_decrypt(
             blocks,
             priv=priv_tuple,
             p=p,
